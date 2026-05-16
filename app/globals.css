@@ -1,0 +1,136 @@
+/* ============================================================
+   DataNest - Estilos globales
+   ============================================================ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* --- Variables CSS del sistema de diseño --- */
+:root {
+  --brand:   #6366f1;
+  --accent:  #10b981;
+  --danger:  #ef4444;
+  --surface: #f8fafc;
+}
+
+/* --- Reset y base --- */
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    font-family: var(--font-sora), system-ui, sans-serif;
+    background: var(--surface);
+    color: #0f172a;
+  }
+
+  /* Scrollbar personalizada */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+  /* Selección de texto con color de marca */
+  ::selection {
+    background: rgba(99, 102, 241, 0.2);
+    color: #4338ca;
+  }
+}
+
+/* --- Componentes reutilizables --- */
+@layer components {
+  /* Tarjeta estándar */
+  .card {
+    @apply bg-white rounded-2xl border border-surface-200 shadow-card p-6;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+  }
+  .card:hover {
+    @apply shadow-card-hover;
+  }
+
+  /* Botón primario */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5
+           bg-brand-500 text-white font-semibold text-sm rounded-xl
+           transition-all duration-200 hover:bg-brand-600
+           active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Botón secundario */
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5
+           bg-surface-100 text-surface-800 font-medium text-sm rounded-xl border
+           border-surface-200 transition-all duration-200
+           hover:bg-surface-200 active:scale-[0.98];
+  }
+
+  /* Input estándar */
+  .input {
+    @apply w-full px-4 py-2.5 rounded-xl border border-surface-200 bg-white
+           text-sm text-surface-900 placeholder:text-surface-400
+           focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400
+           transition-all duration-150;
+  }
+
+  /* Badge de estado */
+  .badge {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold;
+  }
+  .badge-green  { @apply bg-accent-400/15 text-accent-600; }
+  .badge-red    { @apply bg-danger-400/15 text-danger-500; }
+  .badge-indigo { @apply bg-brand-100 text-brand-600; }
+  .badge-gray   { @apply bg-surface-100 text-surface-600; }
+
+  /* Skeleton loader */
+  .skeleton {
+    @apply rounded-xl bg-surface-200 animate-pulse;
+  }
+
+  /* Gradiente de fondo de hero */
+  .gradient-mesh {
+    background:
+      radial-gradient(ellipse at 20% 50%, rgba(99, 102, 241, 0.08) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(16, 185, 129, 0.06) 0%, transparent 60%),
+      #f8fafc;
+  }
+}
+
+/* --- Utilidades extra --- */
+@layer utilities {
+  /* Texto con gradiente de marca */
+  .text-gradient {
+    background: linear-gradient(135deg, #6366f1, #10b981);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Borde con gradiente */
+  .border-gradient {
+    border: 1px solid transparent;
+    background-clip: padding-box;
+    position: relative;
+  }
+
+  /* Efecto de entrada escalonada */
+  .animate-in-1 { animation: slideUp .4s ease .1s both; }
+  .animate-in-2 { animation: slideUp .4s ease .2s both; }
+  .animate-in-3 { animation: slideUp .4s ease .3s both; }
+  .animate-in-4 { animation: slideUp .4s ease .4s both; }
+  .animate-in-5 { animation: slideUp .4s ease .5s both; }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+}

@@ -1,0 +1,59 @@
+version: "3.9"
+
+# ============================================================
+# DataNest - Docker Compose para desarrollo local
+# Uso: docker compose up -d
+# ============================================================
+
+services:
+  # --- Base de datos PostgreSQL local ---
+  # En producción se usa Neon (cloud), esto es solo para desarrollo
+  postgres:
+    image: postgres:16-alpine
+    container_name: datanest_db
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: datanest
+      POSTGRES_USER: datanest_user
+      POSTGRES_PASSWORD: datanest_pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./sql/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U datanest_user -d datanest"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # --- Aplicación Next.js ---
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: datanest_app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: "postgresql://datanest_user:datanest_pass@postgres:5432/datanest"
+      NEXTAUTH_URL: "http://localhost:3000"
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      MERCADOPAGO_CLIENT_ID: ${MERCADOPAGO_CLIENT_ID}
+      MERCADOPAGO_CLIENT_SECRET: ${MERCADOPAGO_CLIENT_SECRET}
+      MERCADOPAGO_REDIRECT_URI: "http://localhost:3000/api/sources/mercadopago/callback"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+
+volumes:
+  postgres_data:
+    driver: local
