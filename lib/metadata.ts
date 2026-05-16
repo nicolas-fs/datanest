@@ -18,4 +18,8 @@ export const DASHBOARD_META: Record<string, Metadata> = {
     title:       "Asistente IA",
     description: "Consultá tus datos de negocio en lenguaje natural con GPT-4o-mini",
   },
+  informe: {
+    title:       "Informe PDF",
+    description: "Compilá las respuestas del chatbot en un informe PDF profesional",
+  },
 };

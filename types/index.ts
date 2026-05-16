@@ -114,6 +114,27 @@ export interface UploadResult {
   errors: string[];
 }
 
+// --- Carrito de Informes PDF ---
+
+export interface InformeItem {
+  id:        string;   // ID del mensaje del asistente
+  pregunta:  string;   // Texto que envió el usuario
+  respuesta: string;   // Texto que respondió la IA
+  fecha:     string;   // ISO string de la fecha de la respuesta
+}
+
+export interface InformeStore {
+  items:          InformeItem[];
+  isDrawerOpen:   boolean;
+  agregarItem:    (item: InformeItem) => void;
+  quitarItem:     (id: string) => void;
+  vaciarInforme:  () => void;
+  abrirDrawer:    () => void;
+  cerrarDrawer:   () => void;
+  cantidad:       number;          // computed — iguala items.length
+  estaEnInforme:  (id: string) => boolean;
+}
+
 // --- Columnas esperadas en Excel/CSV de ventas ---
 // El usuario debe mapear sus columnas a estos campos
 export interface SaleRow {

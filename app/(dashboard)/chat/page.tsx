@@ -1,18 +1,22 @@
 // ============================================================
-// DataNest - Página del Chatbot IA (refactorizada)
-// Usa: useChat hook + MessageBubble + TypingIndicator
+// DataNest - Página del Chatbot IA
+// Usa: useChat hook + MessageBubble (con soporte de informe)
+// + TypingIndicator
+//
+// Para cada mensaje del asistente, busca la pregunta del usuario
+// inmediatamente anterior y se la pasa como prop a MessageBubble,
+// de modo que el store guarde el par pregunta/respuesta completo.
 // ============================================================
 
 "use client";
 
 import { useRef, useEffect } from "react";
 import { Send, Sparkles, RefreshCw } from "lucide-react";
-import { useChat }            from "@/hooks/useChat";
-import { MessageBubble }      from "@/components/chat/MessageBubble";
-import { TypingIndicator }    from "@/components/chat/TypingIndicator";
+import { useChat }         from "@/hooks/useChat";
+import { MessageBubble }   from "@/components/chat/MessageBubble";
+import { TypingIndicator } from "@/components/chat/TypingIndicator";
 import { cn } from "@/lib/utils";
 
-// Preguntas de ejemplo para orientar al usuario
 const EXAMPLE_PROMPTS = [
   "¿Cuánto vendí el mes pasado?",
   "¿Cuáles son mis 3 mejores clientes?",
@@ -23,11 +27,10 @@ const EXAMPLE_PROMPTS = [
 
 export default function ChatPage() {
   const { messages, loading, sendMessage, clearChat } = useChat();
-  const bottomRef  = useRef<HTMLDivElement>(null);
-  const inputRef   = useRef<HTMLTextAreaElement>(null);
-  const formRef    = useRef<HTMLFormElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const inputRef  = useRef<HTMLTextAreaElement>(null);
+  const formRef   = useRef<HTMLFormElement>(null);
 
-  // Auto-scroll al recibir mensajes nuevos
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
@@ -69,11 +72,7 @@ export default function ChatPage() {
             </p>
           </div>
         </div>
-        <button
-          onClick={clearChat}
-          className="btn-secondary text-xs"
-          title="Nueva conversación"
-        >
+        <button onClick={clearChat} className="btn-secondary text-xs">
           <RefreshCw className="w-3.5 h-3.5" />
           Nueva
         </button>
@@ -81,14 +80,25 @@ export default function ChatPage() {
 
       {/* ── Lista de mensajes ─────────────────────────────── */}
       <div className="flex-1 overflow-y-auto py-5 space-y-4">
-        {messages.map((msg) => (
-          <MessageBubble key={msg.id} message={msg} />
-        ))}
+        {messages.map((msg, idx) => {
+          // Para los mensajes del asistente, encontrar la pregunta anterior del usuario
+          const pregunta = msg.role === "assistant"
+            ? messages.slice(0, idx).reverse().find((m) => m.role === "user")?.content
+            : undefined;
+
+          return (
+            <MessageBubble
+              key={msg.id}
+              message={msg}
+              pregunta={pregunta}
+            />
+          );
+        })}
         {loading && <TypingIndicator />}
         <div ref={bottomRef} />
       </div>
 
-      {/* ── Prompts de ejemplo (solo al inicio) ───────────── */}
+      {/* ── Prompts de ejemplo ────────────────────────────── */}
       {isFirstMessage && !loading && (
         <div className="pb-3 animate-in-3">
           <p className="text-xs text-surface-400 mb-2 font-medium">Podés preguntarme:</p>
@@ -108,7 +118,7 @@ export default function ChatPage() {
         </div>
       )}
 
-      {/* ── Input de texto ────────────────────────────────── */}
+      {/* ── Input ─────────────────────────────────────────── */}
       <div className="border-t border-surface-200 pt-4 animate-in-4">
         <form ref={formRef} onSubmit={handleSubmit} className="flex gap-3 items-end">
           <textarea

@@ -1,5 +1,6 @@
 // ============================================================
 // DataNest - Sidebar de navegación
+// Incluye el link "Informe PDF" con badge de cantidad en tiempo real.
 // ============================================================
 
 "use client";
@@ -11,31 +12,43 @@ import {
   LayoutDashboard,
   PlugZap,
   MessageSquareText,
+  FileText,
   LogOut,
   Database,
   ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useInformeStore } from "@/lib/store/informe-store";
+import { useEffect, useState } from "react";
 
 interface SidebarProps {
   user: {
-    name?: string | null;
+    name?:  string | null;
     email?: string | null;
     image?: string | null;
   };
 }
 
 const NAV_ITEMS = [
-  { href: "/",        label: "Dashboard",      icon: LayoutDashboard },
-  { href: "/connect", label: "Conectar fuente", icon: PlugZap },
-  { href: "/chat",    label: "Asistente IA",    icon: MessageSquareText },
+  { href: "/",        label: "Dashboard",       icon: LayoutDashboard },
+  { href: "/connect", label: "Conectar fuente",  icon: PlugZap },
+  { href: "/chat",    label: "Asistente IA",     icon: MessageSquareText },
+  { href: "/informe", label: "Informe PDF",       icon: FileText, badge: true },
 ];
 
 export function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname();
+  const items    = useInformeStore((s) => s.items);
+
+  // Evitar hydration mismatch con localStorage
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  const cantidad = mounted ? items.length : 0;
 
   return (
     <aside className="w-64 bg-white border-r border-surface-200 flex flex-col h-full">
+
       {/* Logo */}
       <div className="p-6 border-b border-surface-100">
         <div className="flex items-center gap-3">
@@ -51,14 +64,15 @@ export function Sidebar({ user }: SidebarProps) {
 
       {/* Navegación */}
       <nav className="flex-1 p-4 space-y-1">
-        {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+        {NAV_ITEMS.map(({ href, label, icon: Icon, badge }) => {
           const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
           return (
             <Link
               key={href}
               href={href}
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 group",
+                "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium",
+                "transition-all duration-150 group",
                 active
                   ? "bg-brand-50 text-brand-600"
                   : "text-surface-600 hover:bg-surface-50 hover:text-surface-900"
@@ -66,13 +80,28 @@ export function Sidebar({ user }: SidebarProps) {
             >
               <Icon
                 className={cn(
-                  "w-5 h-5 transition-colors",
+                  "w-5 h-5 transition-colors flex-shrink-0",
                   active ? "text-brand-500" : "text-surface-400 group-hover:text-surface-600"
                 )}
               />
-              {label}
-              {active && (
-                <ChevronRight className="w-3.5 h-3.5 ml-auto text-brand-400" />
+              <span className="flex-1">{label}</span>
+
+              {/* Badge de cantidad — solo para Informe PDF */}
+              {badge && cantidad > 0 && (
+                <span className={cn(
+                  "min-w-[20px] h-5 px-1.5 rounded-full text-[10px] font-black",
+                  "flex items-center justify-center leading-none",
+                  active
+                    ? "bg-brand-200 text-brand-700"
+                    : "bg-brand-500 text-white"
+                )}>
+                  {cantidad}
+                </span>
+              )}
+
+              {/* Chevron activo (solo si no hay badge) */}
+              {active && !(badge && cantidad > 0) && (
+                <ChevronRight className="w-3.5 h-3.5 text-brand-400" />
               )}
             </Link>
           );
@@ -82,8 +111,8 @@ export function Sidebar({ user }: SidebarProps) {
       {/* Usuario + Cerrar sesión */}
       <div className="p-4 border-t border-surface-100">
         <div className="flex items-center gap-3 mb-3 px-1">
-          {/* Avatar */}
-          <div className="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center overflow-hidden text-brand-600 font-bold text-sm flex-shrink-0">
+          <div className="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center
+                          overflow-hidden text-brand-600 font-bold text-sm flex-shrink-0">
             {user.image ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={user.image} alt={user.name ?? ""} className="w-full h-full object-cover" />
